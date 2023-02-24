@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/cdn/*"
+  to = "/.netlify/functions/proxy"
+  status = 200
