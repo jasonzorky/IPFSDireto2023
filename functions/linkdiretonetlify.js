@@ -1,13 +1,14 @@
-async function handleRequest(request) {
-  let upstream_domain = "w3s.link";
-  let upstream_path = "/ipfs/";
+const fetch = require("node-fetch");
+
+exports.handler = async (event, context) => {
+  let upstream_domain = "player.odycdn.com";
+  let upstream_path = "/speech/";
   
-  let response = null;  
-  let url = new URL(request.url);
+  let url = new URL(event.path);
   let url_host = url.host;
   let url_hostname = url.hostname;
-  let method = request.method;
-  let request_headers = request.headers;
+  let method = event.httpMethod;
+  let request_headers = event.headers;
   let new_request_headers = new Headers(request_headers);
   
   url.protocol = 'https:';
@@ -24,21 +25,20 @@ async function handleRequest(request) {
   let original_response = await fetch(url.href, {
       method: method,
       headers: new_request_headers,
-      body: request.body,
+      body: event.body,
       redirect: 'manual'
   });
 
   let response_headers = original_response.headers;
   let new_response_headers = new Headers(response_headers);
   // used for debugging
-  new_response_headers.set('st-cloudflare-hit', 'true');
+  new_response_headers.set('st-netlify-hit', 'true');
 
   let status = original_response.status;
 
-  return new Response(original_response.body, {
-      status,
-      headers: new_response_headers
-  });
-}
-
-module.exports = { handleRequest };
+  return {
+    statusCode: status,
+    headers: new_response_headers,
+    body: await original_response.buffer(),
+  };
+};
